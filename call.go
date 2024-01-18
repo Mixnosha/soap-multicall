@@ -63,7 +63,7 @@ func (contract *Contract) NewCall(
 }
 
 // Name sets a name for the call.
-func (call *Call) Name(name string) *Call {
+func (call Call) Name(name string) Call {
 	call.CallName = name
 	return call
 }
