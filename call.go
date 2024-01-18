@@ -53,8 +53,8 @@ type Call struct {
 // Outputs type is the expected output struct to unpack and set values in.
 func (contract *Contract) NewCall(
 	outputs any, methodName string, inputs ...any,
-) *Call {
-	return &Call{
+) Call {
+	return Call{
 		Contract: contract,
 		Method:   methodName,
 		Inputs:   inputs,
