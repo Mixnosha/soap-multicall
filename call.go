@@ -41,7 +41,7 @@ func ParseABI(rawJson string) (*abi.ABI, error) {
 // Call wraps a multicall call.
 type Call struct {
 	CallName string
-	Contract *Contract
+	Contract Contract
 	Method   string
 	Inputs   []any
 	Outputs  any
@@ -55,7 +55,7 @@ func (contract *Contract) NewCall(
 	outputs any, methodName string, inputs ...any,
 ) Call {
 	return Call{
-		Contract: contract,
+		Contract: *contract,
 		Method:   methodName,
 		Inputs:   inputs,
 		Outputs:  outputs,
