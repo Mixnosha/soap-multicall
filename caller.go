@@ -61,17 +61,9 @@ func (caller *Caller) Call(opts *bind.CallOpts, calls ...*Call) ([]*Call, error)
 		})
 	}
 
-	results, err := caller.contract.Aggregate3(opts, multiCalls)
+	_, err := caller.contract.Aggregate3(opts, multiCalls)
 	if err != nil {
 		return calls, fmt.Errorf("multicall failed: %v", err)
-	}
-
-	for i, result := range results {
-		call := calls[i] // index always matches
-		call.Failed = !result.Success
-		if err := call.Unpack(result.ReturnData); err != nil {
-			return calls, fmt.Errorf("failed to unpack call outputs [%d]: %v", result.ReturnData, calls[i].CallName)
-		}
 	}
 
 	return calls, nil
