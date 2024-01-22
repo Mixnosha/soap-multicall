@@ -1,4 +1,4 @@
-module github.com/forta-network/go-multicall
+module github.com/Mixnosha/soap-multicall
 
 go 1.19
 
