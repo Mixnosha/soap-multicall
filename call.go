@@ -89,7 +89,6 @@ func (call *Call) Unpack(b []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to unpack '%s' outputs: %v", call.Method, err)
 	}
-
 	fieldCount := t.NumField()
 	for i := 0; i < fieldCount; i++ {
 		field := t.Field(i)
