@@ -64,11 +64,7 @@ func (caller *Caller) Call(opts *bind.CallOpts, calls ...*Call) ([]*Call, error)
 
 	results, err := caller.contract.Aggregate3(opts, multiCalls)
 	if err != nil {
-        nameArr := strings.Split(calls[0].CallName, "_")
-        if nameArr[1] == "decimals" && strings.Contains(err.Error(), "execution reverted: Multicall3: call failed"){
-        }else{
-		    return calls, fmt.Errorf("multicall failed: %v", err)
-        }
+		return calls, fmt.Errorf("multicall failed: %v", err)
 	}
 
 	for i, result := range results {
