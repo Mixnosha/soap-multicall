@@ -3,7 +3,6 @@ package multicall
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -56,7 +55,7 @@ func (caller *Caller) Call(opts *bind.CallOpts, calls ...*Call) ([]*Call, error)
 			return calls, fmt.Errorf("failed to pack call inputs at index [%d]: %v", i, err)
 		}
 		multiCalls = append(multiCalls, contract_multicall.Multicall3Call3{
-			Target:       *call.Contract.GetAddress(),
+			Target:       call.Contract.Address,
 			AllowFailure: call.CanFail,
 			CallData:     b,
 		})
@@ -64,19 +63,15 @@ func (caller *Caller) Call(opts *bind.CallOpts, calls ...*Call) ([]*Call, error)
 
 	results, err := caller.contract.Aggregate3(opts, multiCalls)
 	if err != nil {
-        if strings.Contains(err.Error(), "abi: attempting to unmarshal an empty string while arguments are expected") {
-        }else if strings.Contains(err.Error(), "execution reverted") {
-        }else{
-		    return calls, fmt.Errorf("multicall failed: %v", err)
-        }
+		return calls, fmt.Errorf("multicall failed: %v", err)
 	}
 
-    for i, result := range results {
+	for i, result := range results {
 		call := calls[i] // index always matches
 		call.Failed = !result.Success
-		// if err := call.Unpack(result.ReturnData); err != nil {
-            // return calls, fmt.Errorf("failed to unpack call at index [%d]: %v", i, err)
-		// }
+		if err := call.Unpack(result.ReturnData); err != nil {
+			return calls, fmt.Errorf("failed to unpack call outputs at index [%d]: %v", i, err)
+		}
 	}
 
 	return calls, nil
@@ -84,12 +79,7 @@ func (caller *Caller) Call(opts *bind.CallOpts, calls ...*Call) ([]*Call, error)
 
 // CallChunked makes multiple multicalls by chunking given calls.
 // Cooldown is helpful for sleeping between chunks and avoiding rate limits.
-func (caller *Caller) CallChunked(
-    opts *bind.CallOpts,
-    chunkSize int,
-    cooldown time.Duration,
-    calls ...*Call,
-) ([]*Call, error) {
+func (caller *Caller) CallChunked(opts *bind.CallOpts, chunkSize int, cooldown time.Duration, calls ...*Call) ([]*Call, error) {
 	var allCalls []*Call
 	for i, chunk := range chunkInputs(chunkSize, calls) {
 		if i > 0 && cooldown > 0 {

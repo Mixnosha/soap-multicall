@@ -13,20 +13,15 @@ import (
 // Contract wraps the parsed ABI and acts as a call factory.
 type Contract struct {
 	ABI     *abi.ABI
-	Address string 
+	Address common.Address
 }
 
 // NewContract creates a new call factory.
-func NewContract(abi *abi.ABI, address string) (*Contract, error) {
+func NewContract(address string, abi *abi.ABI) (*Contract, error) {
 	return &Contract{
 		ABI:     abi,
-		Address: address,
+		Address: common.HexToAddress(address),
 	}, nil
-}
-
-func (c *Contract) GetAddress() *common.Address {
-    addr := common.HexToAddress(c.Address)
-    return &addr
 }
 
 // ParseABI parses raw ABI JSON.
@@ -41,7 +36,7 @@ func ParseABI(rawJson string) (*abi.ABI, error) {
 // Call wraps a multicall call.
 type Call struct {
 	CallName string
-	Contract Contract
+	Contract *Contract
 	Method   string
 	Inputs   []any
 	Outputs  any
@@ -53,9 +48,9 @@ type Call struct {
 // Outputs type is the expected output struct to unpack and set values in.
 func (contract *Contract) NewCall(
 	outputs any, methodName string, inputs ...any,
-) Call {
-	return Call{
-		Contract: *contract,
+) *Call {
+	return &Call{
+		Contract: contract,
 		Method:   methodName,
 		Inputs:   inputs,
 		Outputs:  outputs,
@@ -63,7 +58,7 @@ func (contract *Contract) NewCall(
 }
 
 // Name sets a name for the call.
-func (call Call) Name(name string) Call {
+func (call *Call) Name(name string) *Call {
 	call.CallName = name
 	return call
 }
@@ -89,6 +84,7 @@ func (call *Call) Unpack(b []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to unpack '%s' outputs: %v", call.Method, err)
 	}
+
 	fieldCount := t.NumField()
 	for i := 0; i < fieldCount; i++ {
 		field := t.Field(i)
