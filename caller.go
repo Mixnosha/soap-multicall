@@ -3,6 +3,7 @@ package multicall
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -70,7 +71,10 @@ func (caller *Caller) Call(opts *bind.CallOpts, calls ...*Call) ([]*Call, error)
 		call := calls[i] // index always matches
 		call.Failed = !result.Success
 		if err := call.Unpack(result.ReturnData); err != nil {
-			return calls, fmt.Errorf("failed to unpack call outputs at index [%d]: %v", i, err)
+            if strings.Contains(err.Error(), "failed to unpack 'decimals' outputs: abi: attempting to unmarshal an empty string while arguments are expected") {
+            }else{
+			    return calls, fmt.Errorf("failed to unpack call outputs at index [%d]: %v", i, err)
+            }
 		}
 	}
 
