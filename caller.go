@@ -72,6 +72,7 @@ func (caller *Caller) Call(opts *bind.CallOpts, calls ...*Call) ([]*Call, error)
 		call.Failed = !result.Success
 		if err := call.Unpack(result.ReturnData); err != nil {
             if strings.Contains(err.Error(), "failed to unpack 'decimals' outputs: abi: attempting to unmarshal an empty string while arguments are expected") {
+            }else if strings.Contains(err.Error(), "failed to unpack 'decimals' outputs: abi: improperly encoded uint8 value") {
             }else{
 			    return calls, fmt.Errorf("failed to unpack call outputs at index [%d]: %v", i, err)
             }
