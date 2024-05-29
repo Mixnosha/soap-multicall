@@ -3,6 +3,7 @@ package multicall
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/forta-network/go-multicall/contracts/contract_multicall"
+    "github.com/ethereum/go-ethereum/rpc"
 )
 
 // DefaultAddress is the same for all chains (Multicall3).
@@ -38,6 +40,25 @@ func New(client bind.ContractCaller, multicallAddr ...string) (*Caller, error) {
 
 // Dial dials and Ethereum JSON-RPC API and uses the client as the
 // caller backend.
+
+func DialHttpWithClient(
+    ctx context.Context,
+    rawUrl string,
+    client *http.Client,
+    multicallAddr ...string,
+) (*Caller, error){
+    clOptions := rpc.WithHTTPClient(client)
+    rpcClient, err := rpc.DialOptions(ctx, rawUrl, clOptions)
+    if err != nil {
+        return nil, err
+    }
+
+    eclient := ethclient.NewClient(rpcClient)
+
+    return New(eclient, multicallAddr...)
+}
+
+
 func Dial(ctx context.Context, rawUrl string, multicallAddr ...string) (*Caller, error) {
 	client, err := ethclient.DialContext(ctx, rawUrl)
 	if err != nil {
